@@ -37,10 +37,8 @@ if __name__ == '__main__':
         'encoder_common_mean': make_dense('encoder_common_mean', n_latent, None),
         'encoder_common_sigma': make_dense('encoder_common_sigma', n_latent, tf.nn.softplus),
         'decoder_same': make_dense('decoder_same', n_hidden, acitv),
-        'decoder_x_mean': make_dense('decoder_x_mean', n_input, None),
-        'decoder_x_sigma': make_dense('decoder_x_sigma', n_input, tf.nn.softplus),
-        'decoder_y_mean': make_dense('decoder_y_mean', n_input, None),
-        'decoder_y_sigma': make_dense('decoder_y_sigma', n_input, tf.nn.softplus),
+        'decoder_x_mean': make_dense('decoder_x_mean', n_input, None),        
+        'decoder_y_mean': make_dense('decoder_y_mean', n_input, None),       
     }
 
     model = VBTA(n_input, n_latent, build_dict, triplet_coef=args.t_start,

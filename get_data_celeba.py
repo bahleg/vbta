@@ -81,3 +81,7 @@ def get_data_celeba():
         new_female_idx.append(female_id)
     np.save('malex', X[male_idx])
     np.save('femalex', np.array(femalex)[new_female_idx])
+
+
+if __name__=='__main__':
+    get_data_celeba()

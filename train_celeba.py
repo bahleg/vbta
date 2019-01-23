@@ -20,7 +20,9 @@ if __name__ == '__main__':
 
     for required_data in ['femalex.npy', 'malex.npy']:
         if not os.path.exists(required_data):
+            print 'Preparing Data'
             get_data_celeba()
+    print 'Loading data'
     X_male = np.load('./malex.npy')
     X_female = np.load('./femalex.npy')
 
@@ -32,8 +34,8 @@ if __name__ == '__main__':
     n_latent = 64
     acitv = tf.nn.relu
     build_dict = {
-        'encoder_x': make_encoder_cnn('encoder_x'),  # make_dense('encoder_x', n_hidden, acitv),
-        'encoder_y': make_encoder_cnn('encoder_y'),  # make_dense('encoder_y', n_hidden,acitv),
+        'encoder_x': make_encoder_cnn('encoder_x'), 
+        'encoder_y': make_encoder_cnn('encoder_y'), 
         'encoder_common_mean': make_dense('encoder_common_mean', n_latent, None),
         'encoder_common_sigma': make_dense('encoder_common_sigma', n_latent, tf.nn.softplus),
         'decoder_same': decoder_cnn,
@@ -43,37 +45,24 @@ if __name__ == '__main__':
         'decoder_y_mean': make_dense('decoder_y_mean', n_input, None),
         'decoder_y_sigma': make_dense('decoder_y_sigma', n_input, tf.nn.softplus),
     }
-
-    n_hidden = 512
-    n_latent = 64
-    acitv = tf.nn.relu
-    n_input = X_train.shape[1]
-    build_dict = {
-        'encoder_x': make_dense('encoder_x', n_hidden, acitv),
-        'encoder_y': make_dense('encoder_y', n_hidden, acitv),
-        'encoder_common_mean': make_dense('encoder_common_mean', n_latent, None),
-        'encoder_common_sigma': make_dense('encoder_common_sigma', n_latent, tf.nn.softplus),
-        'decoder_same': make_dense('decoder_same', n_hidden, acitv),
-        'decoder_x_mean': make_dense('decoder_x_mean', n_input, None),
-        'decoder_y_mean': make_dense('decoder_y_mean', n_input, None),
-    }
-
-    model = VBTA(n_input, n_latent, build_dict, triplet_coef=args.t_start,
-                 cc_coef=args.cc_start)
+    
+    print 'Building model'
+    model = VBTA(n_input, n_latent, build_dict, triplet_coef=args.t,
+                 cc_coef=args.cc)
     rs = np.random.RandomState(args.seed)
     idx = range(X_train.shape[0])
     rs.shuffle(idx)
-    semi = idx[:args.semi_supervised_size]
 
-    batch_size = min(args.batch_size, args.semi_supervised_size)
+
+    batch_size = args.batch_size
     optimizer = tf.train.AdamOptimizer(10 ** (-3))
 
-    batch_gen = simple_batch_generator_build(X_male, X_female, semi,
+    batch_gen = simple_batch_generator_build(X_male, X_female, 
                                              batch_size,
                                              args.epoch_num,
-                                             model)
-
-    train_callback = partial(callback, X=X_male, Y=X_female, model_save=args.model_save)
-    model.fit(optimizer, batch_gen, callback=train_callback, continue_train=False)
+                                             model)    
+    
+    print 'Training'
+    model.fit(optimizer, batch_gen, callback=None, continue_train=False)
     model.save(args.model_save)
 
